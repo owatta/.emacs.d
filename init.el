@@ -51,6 +51,7 @@
   (inhibit-splash-screen t)
   (electric-pair-mode t)
   (fringe-mode 25)
+  (line-spacing 0.25)
   (sentence-end-double-space nil)
   (enable-recursive-minibuffers t)
   (disabled-command-function nil)
@@ -62,8 +63,10 @@
   (view-read-only t)
   :bind
   ("C-h" . delete-backward-char)
+  ("<down>" . scroll-up-line)
+  ("<up>" . scroll-down-line)
   :config
-  (load-theme 'modus-operandi)
+  ;; (load-theme 'modus-operandi)
   (defun init--update-scratch-message ()
     (let ((cod-quotes '(";; There are three states of being. Not knowing, action and completion."
 			";; Accept that everything is a draft. It helps to get it done."
@@ -80,7 +83,12 @@
 			";; Done is the engine of more.")))
       (setq initial-scratch-message (nth (random 12) cod-quotes))))
   (advice-add 'get-scratch-buffer-create :before #'init--update-scratch-message)
-  (init--update-scratch-message))
+  (init--update-scratch-message)
+
+  (defun insert-time-stamp ()
+	(interactive)
+	(insert (format-time-string "%Y%m%dT%H%M")))
+  (global-set-key (kbd "C-x t s") 'insert-time-stamp))
 
 (use-package files
   :hook
@@ -98,15 +106,8 @@
 
 (use-package faces
   :custom-face
-  (default ((t (:family "Ubuntu Mono" :height 135))))
-  (variable-pitch ((t (:family "Ubuntu" :hegiht 135))))
-  :config
-
-  (defvar init--variable-pitch-mode-alist '("Info-mode" "man-mode" "eww-mode" "tex-mode")
-    "List of modes for which `variable-pitch-mode` should be enabled.")
-  (mapc (lambda (mode)
-	  (add-hook (intern (concat mode "-hook")) #'variable-pitch-mode))
-	init--variable-pitch-mode-alist))
+  (default ((t (:family "Ubuntu Mono" :height 165))))
+  (variable-pitch ((t (:family "Ubuntu" :hegiht 165)))))
 
 (use-package embark
   :ensure t
@@ -169,7 +170,8 @@
         ([remap yank-pop] . consult-yank-pop)
         :map goto-map
         ("e" . consult-compile-error)
-        ("f" . consult-flymake)                   ;; Alternative: consult-flycheck
+	;; TODO: replace to consult-flycheck after fixing it
+        ("f" . consult-flymake)                   ;; Alternative: consult-flymake
         ([remap goto-line] . consult-goto-line)
         ("o" . consult-outline)                   ;; Alternative: consult-org-heading
         ("m" . consult-mark)
@@ -287,6 +289,7 @@
 
 (use-package popper
   :ensure
+	;; TODO: change binds here 'cause my keeb 2 smol
   :bind (("M-`"   . popper-toggle)
          ("C-`"   . popper-cycle)
          ("C-M-`" . popper-toggle-type))
@@ -325,19 +328,29 @@
 (use-package magit
   :ensure t)
 
-(use-package eglot
-  :hook
-  (eglot--managed-mode-hook . (lambda () (flymake-mode -1))))
-
-(use-package flycheck
-  :ensure t
-  :init
-  (global-flycheck-mode t))
+;; TODO: Fix flycheck
+;; Problem is that it doesn't see cargo project and so it considers
+;; every dependency unadded even if everything compiles
+;; (use-package flycheck
+;;   :ensure t
+;;   :init
+;;   (global-flycheck-mode t))
 
 (use-package rustic
   :ensure t
   :custom
-  (rustic-lsp-client 'eglot))
+  (rustic-lsp-client 'eglot)
+  (rustic-format-on-save t)
+  :config
+  ;; turn off flymake
+  ;; (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+  ;; (push 'rustic-clippy flycheck-checkers)
+  ;; TODO: fix above two lines after fixing flycheck
+
+  ;; A few things to remember:
+  ;; C-c C-c prefix for rustic features
+  ;; eglot-code-actions
+)
 
 (use-package nix-mode
   :ensure t)
@@ -345,6 +358,47 @@
 (use-package go-mode
   :ensure t
   :hook (go-mode . eglot))
+
+(use-package geiser
+  :ensure t)
+
+(use-package geiser-chicken
+  :ensure t)
+
+(use-package elfeed
+  :ensure t
+  :custom
+  (elfeed-feeds '("https://news.ycombinator.com/rss"
+		  "https://xkcd.com/rss.xml"
+		  "https://readrust.net/all/feed.rss"
+		  "https://math.stackexchange.com/feeds"
+		  "https://fasterthanli.me/index.xml"
+		  "https://karthinks.com/index.xml"
+		  "https://forum.merveilles.town/rss.xml"
+		  "https://100r.co/links/rss.xml"))
+  :bind
+  (:map ctl-x-map
+	("F" . 'elfeed)))
+
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-tokyo-night t))
+
+(use-package sly
+  :ensure t)
+
+
+;; I haven't updated to emacs with native treesitter yet :(
+(elpaca (typst-mode :host github :repo "Ziqi-Yang/typst-mode.el"))
+;; (elpaca (typst-ts-mode :host codeberg :repo "meow_king/typst-ts-mode"))
+
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory "~/Documents/notes/")
+  :bind (:map mode-specific-map
+	 ("n j" . org-roam-dailies-capture-today)))
 
 ;; TODO: read-only-mode tweaks (automatic pager-mode, quitting on q, etc.)
 ;; TODO: corfu acts like shit in shells (and generally?)
