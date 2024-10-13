@@ -393,15 +393,78 @@
 (elpaca (typst-mode :host github :repo "Ziqi-Yang/typst-mode.el"))
 ;; (elpaca (typst-ts-mode :host codeberg :repo "meow_king/typst-ts-mode"))
 
+;;; note-taking
+;; NOTE: The setup is a clusterfuck right now, as I'm still figuring
+;; things out, but eventually it'll get there.
+
+;; TODO: This sucks but maybe I just need to configure it differently
+;; (use-package org-download
+;;   :ensure t
+;;   :hook
+;;   (org-mode-hook . org-download-enable)
+;;   :config
+;;   (setq-default org-download-image-dir "~/Pictures"))
+
 (use-package org-roam
   :ensure t
   :custom
   (org-roam-directory "~/Documents/notes/")
+  (org-roam-complete-everywhere t)
   :bind (:map mode-specific-map
-	 ("n j" . org-roam-dailies-capture-today)))
+	      ("n j" . org-roam-dailies-capture-today)
+	      ("n f" . org-roam-node-find)
+	      ("n i" . org-roam-node-insert)
+	      ("n l" . org-roam-buffer-toggle))
+  :config
+  ;; (add-hook 'org-roam-mode-hook (setq org-download-image-dir "~/Documents/notes/img"))
+  (org-roam-setup))
+
+(use-package deft
+  :ensure t
+  :after org
+  :bind
+  (:map mode-specific-map
+	("n d" . deft)
+	:map deft-mode-map
+	("C-h" . deft-filter-decrement))
+  :custom
+  (deft-strip-summary-regexp
+   (concat "\\("
+	   "[\n\t]" ;; blank
+	   "\\|^#\\+[[:alpha:]_]+:.*$" ;; org-mode metadata
+	   "\\|^:PROPERTIES:\n\\(.+\n\\)+:END:\n"
+	   "\\)"))
+  (deft-recursive t)
+  (deft-use-filter-string-for-filename t)
+  (deft-default-extension "org")
+  (deft-directory org-roam-directory)
+  :config
+  (defun init--deft-parse-title (file contents)
+    "Parse the given FILE and CONTENTS and determine the title.
+  If `deft-use-filename-as-title' is nil, the title is taken to
+  be the first non-empty line of the FILE.  Else the base name of the FILE is
+  used as title."
+    (let ((begin (string-match "^#\\+[tT][iI][tT][lL][eE]: .*$" contents)))
+      (if begin
+	  (string-trim (substring contents begin (match-end 0)) "#\\+[tT][iI][tT][lL][eE]: *" "[\n\t ]+")
+	(deft-base-filename file))))
+
+  (advice-add 'deft-parse-title :override #'init--deft-parse-title))
+
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  (org-roam-ui-open-on-start t))
 
 ;; TODO: read-only-mode tweaks (automatic pager-mode, quitting on q, etc.)
 ;; TODO: corfu acts like shit in shells (and generally?)
 ;; TODO: paren editing
 ;; TODO: do something about the Nix Way™ of managing dev environments
 ;;       and how emacs doesn't play nice with it
+;; TODO: customize org-mode so that :PROPERTIES: blocks don't get
+;;       shown and headings are big and starless.
+;; TODO: variable-pitch faces in org-mode and such
