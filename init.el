@@ -66,7 +66,7 @@
   ("<down>" . scroll-up-line)
   ("<up>" . scroll-down-line)
   :config
-  ;; (load-theme 'modus-operandi)
+  (load-theme 'modus-operandi)
   (defun init--update-scratch-message ()
     (let ((cod-quotes '(";; There are three states of being. Not knowing, action and completion."
 			";; Accept that everything is a draft. It helps to get it done."
@@ -382,8 +382,7 @@
 
 (use-package doom-themes
   :ensure t
-  :config
-  (load-theme 'doom-tokyo-night t))
+  :config)
 
 (use-package sly
   :ensure t)
@@ -469,3 +468,4 @@
 ;;       shown and headings are big and starless.
 ;; TODO: variable-pitch faces in org-mode and such
 ;; TODO: smooth scrolling :P
+;; TODO: fix LaTeX rendering in org :(
