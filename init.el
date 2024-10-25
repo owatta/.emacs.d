@@ -61,12 +61,13 @@
   (modus-themes-mixed-fonts t)
   (custom-file "/dev/null")
   (view-read-only t)
+  (ring-bell-function nil)
   :bind
   ("C-h" . delete-backward-char)
   ("<down>" . scroll-up-line)
   ("<up>" . scroll-down-line)
   :config
-  (load-theme 'modus-operandi)
+  ;; (load-theme 'modus-operandi)
   (defun init--update-scratch-message ()
     (let ((cod-quotes '(";; There are three states of being. Not knowing, action and completion."
 			";; Accept that everything is a draft. It helps to get it done."
@@ -365,6 +366,9 @@
 (use-package geiser-chicken
   :ensure t)
 
+(use-package geiser-chez
+  :ensure t)
+
 (use-package elfeed
   :ensure t
   :custom
@@ -382,7 +386,9 @@
 
 (use-package doom-themes
   :ensure t
-  :config)
+  :custom
+  (custom-theme-directory (concat user-emacs-directory "site-lisp/"))
+  (load-theme 'doom-mountain t))
 
 (use-package sly
   :ensure t)
@@ -458,6 +464,9 @@
   (org-roam-ui-follow t)
   (org-roam-ui-update-on-save t)
   (org-roam-ui-open-on-start t))
+
+(use-package tuareg
+  :ensure t)
 
 ;; TODO: read-only-mode tweaks (automatic pager-mode, quitting on q, etc.)
 ;; TODO: corfu acts like shit in shells (and generally?)
