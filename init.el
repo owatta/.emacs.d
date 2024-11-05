@@ -388,6 +388,7 @@
   :ensure t
   :custom
   (custom-theme-directory (concat user-emacs-directory "site-lisp/"))
+  :config
   (load-theme 'doom-mountain t))
 
 (use-package sly

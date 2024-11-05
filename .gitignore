@@ -2,3 +2,5 @@
 !init.el
 !early-init.el
 !.gitignore
+!site-lisp/*
+!site-lisp
